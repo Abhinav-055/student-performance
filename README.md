@@ -65,25 +65,6 @@ Dense(5, Softmax)
    - Permutation-based importance on the held-out test set
    - Top-10 features exported to CSV and visualized
 
-## Repository Structure
-
-```
-.
-├── student-performance-notebook.ipynb   # Main training + evaluation notebook
-├── artifacts/
-│   ├── student_model.h5                 # Trained Keras model
-│   ├── best_model.h5                    # Best checkpoint by val accuracy
-│   ├── scaler.pkl                       # Fitted StandardScaler
-│   ├── label_encoders.pkl               # Fitted LabelEncoders (per categorical col)
-│   ├── feature_cols.pkl                 # Feature column order (for inference)
-│   └── feature_importance.csv           # Permutation importance scores
-├── figures/
-│   ├── training_curves.png
-│   ├── confusion_matrix.png
-│   └── feature_importance.png
-└── README.md
-```
-
 ## Getting Started
 
 ### Requirements
@@ -100,9 +81,20 @@ Tested with Python 3.10+ and TensorFlow 2.x.
 2. Update the CSV path in the notebook if you're running locally (the notebook currently expects the Kaggle input path).
 3. Open `student-performance-notebook.ipynb` and run all cells.
 
-The notebook will train the model, print evaluation metrics, save the figures, and export all inference artifacts.
+Running the notebook trains the model, prints evaluation metrics, saves the training/confusion-matrix/feature-importance plots as PNGs, and writes the following inference artifacts to the working directory:
+
+- `student_model.h5` — trained Keras model
+- `best_model.h5` — best checkpoint by validation accuracy
+- `scaler.pkl` — fitted `StandardScaler`
+- `label_encoders.pkl` — fitted `LabelEncoder`s (one per categorical column)
+- `feature_cols.pkl` — feature column order (needed for inference)
+- `feature_importance.csv` — permutation importance scores
+
+> These artifacts are **not** checked into the repo — regenerate them by running the notebook end-to-end.
 
 ### Inference (example)
+
+Once the notebook has been run and the artifacts are in your working directory:
 
 ```python
 import pickle
@@ -111,15 +103,15 @@ import pandas as pd
 from tensorflow.keras.models import load_model
 
 # Load artifacts
-model = load_model('artifacts/student_model.h5')
-with open('artifacts/scaler.pkl', 'rb') as f:
+model = load_model('student_model.h5')
+with open('scaler.pkl', 'rb') as f:
     scaler = pickle.load(f)
-with open('artifacts/label_encoders.pkl', 'rb') as f:
+with open('label_encoders.pkl', 'rb') as f:
     label_encoders = pickle.load(f)
-with open('artifacts/feature_cols.pkl', 'rb') as f:
+with open('feature_cols.pkl', 'rb') as f:
     feature_cols = pickle.load(f)
 
-# Prepare a new sample (as a DataFrame with the same columns as training)
+# Prepare a new sample (same columns as training)
 sample = pd.DataFrame([{
     # 'ColumnName': value,
     # ...
@@ -140,7 +132,7 @@ print(f"Predicted grade: {grade_labels[pred_class]}  (confidence: {probs[0][pred
 
 ## Results
 
-Training curves, confusion matrix, and top feature importances are saved to the `figures/` directory after running the notebook. The permutation-importance ranking highlights which academic and behavioral factors most strongly drive the model's predictions.
+After running the notebook, the training curves, confusion matrix, and top feature importances are generated as PNGs alongside the notebook. The permutation-importance ranking highlights which academic and behavioral factors most strongly drive the model's predictions.
 
 ## Tech Stack
 
